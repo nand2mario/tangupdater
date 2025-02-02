@@ -1,0 +1,37 @@
+<Window x:Class="TangCoresSetup.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TangCoresSetup"
+        mc:Ignorable="d"
+        Title="TangCores Setup" Height="450" Width="800">
+    <Grid>
+        <TabControl>
+            <TabItem Header="SD card setup">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <ComboBox x:Name="DriveComboBox" Width="200" Margin="0,0,10,0"
+                                SelectionChanged="DriveComboBox_SelectionChanged"/>
+                        <Button Content="Refresh Drives" Click="RefreshDrives_Click"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Row="1" Margin="0,20,0,0">
+                        <TextBlock x:Name="SelectedDriveText" Margin="0,10"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            
+            <TabItem Header="Board setup">
+                <Grid Margin="10">
+                    <!-- Board setup content will go here -->
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
