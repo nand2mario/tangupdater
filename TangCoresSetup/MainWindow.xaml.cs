@@ -144,17 +144,13 @@ namespace TangCoresSetup
             {
                 // Get the list.json from GitHub
                 //                var json = await _httpClient.GetStringAsync(UpdateUrl);
-                var json = """
+                var json = await _httpClient.GetStringAsync(UpdateUrl);
+                var options = new JsonSerializerOptions
                 {
-                    "files": [
-                	    {"sha1": "fdc779c150a624f9303b80392baa6f1cf338cc16", "filename": "firmware_20250131.bin"}
-                    ],
-                    "releases"": [
-                        {"name": "v1.0", "files": ["firmware_20250131.bin"]}
-                    ]
-                }
-                """;
-                var releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json);
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                var releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
 
                 if (releaseInfo == null || !releaseInfo.Files.Any())
                 {
