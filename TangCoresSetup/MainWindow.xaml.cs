@@ -528,12 +528,10 @@ namespace TangCoresSetup
                 var buffer = new char[1];
                 var lineBuilder = new StringBuilder();
                 var cr = false;
+                int cch;
                 
-                while (!outputReader.EndOfStream)
+                while ((cch = await outputReader.ReadAsync(buffer, 0, 1)) > 0)
                 {
-                    var charsRead = await outputReader.ReadAsync(buffer, 0, 1);
-                    if (charsRead == 0) continue;
-                    
                     if (buffer[0] == '\r')
                     {
                         cr = true;
@@ -542,6 +540,7 @@ namespace TangCoresSetup
                     {
                         // Complete line - append it
                         AppendBoardOutput(lineBuilder.ToString());
+                        lineBuilder.Clear();
                         cr = true;
                     }
                     else
