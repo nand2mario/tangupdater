@@ -481,6 +481,101 @@ namespace TangCoresSetup
             SelectedDriveText.Text = $"Selected drive: {DriveComboBox.SelectedItem} | {updatesAvailable.Count} updates available";
         }
 
+        private void AppendBoardOutput(string text)
+        {
+            BoardOutputText.AppendText($"{DateTime.Now:HH:mm:ss} - {text}{Environment.NewLine}");
+            BoardOutputText.ScrollToEnd();
+        }
+
+        private async Task RunProgrammerCommand(string arguments)
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var programmerPath = Path.Combine(exePath, "Programmer", "bin", "programmer_cli.exe");
+
+            if (!File.Exists(programmerPath))
+            {
+                AppendBoardOutput("Programmer not found. Please download it first.");
+                return;
+            }
+
+            try
+            {
+                AppendBoardOutput($"Running: programmer_cli.exe {arguments}");
+                
+                var processStartInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = programmerPath,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = new System.Diagnostics.Process();
+                process.StartInfo = processStartInfo;
+                process.OutputDataReceived += (sender, e) => AppendBoardOutput(e.Data);
+                process.ErrorDataReceived += (sender, e) => AppendBoardOutput(e.Data);
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                await process.WaitForExitAsync();
+                
+                AppendBoardOutput($"Process exited with code {process.ExitCode}");
+            }
+            catch (Exception ex)
+            {
+                AppendBoardOutput($"Error: {ex.Message}");
+            }
+        }
+
+        private async void CheckBoard_Click(object sender, RoutedEventArgs e)
+        {
+            await RunProgrammerCommand("--scan");
+        }
+
+        private async void FlashSNESTang_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_selectedDrivePath))
+            {
+                AppendBoardOutput("Please select a drive first");
+                return;
+            }
+
+            var fsFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "snes_*.fs")
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(fsFile))
+            {
+                AppendBoardOutput("SNESTang .fs file not found on SD card");
+                return;
+            }
+
+            await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{fsFile}\"");
+        }
+
+        private async void FlashFirmware_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_selectedDrivePath))
+            {
+                AppendBoardOutput("Please select a drive first");
+                return;
+            }
+
+            var firmwareFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "firmware_*.bin")
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(firmwareFile))
+            {
+                AppendBoardOutput("Firmware .bin file not found on SD card");
+                return;
+            }
+
+            await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
+        }
+
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
         {
             var progressDialog = new ProgressDialog
