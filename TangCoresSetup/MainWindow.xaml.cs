@@ -314,6 +314,31 @@ namespace TangCoresSetup
             return null;
         }
 
+        private void ShowInExplorer_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_selectedDrivePath))
+            {
+                MessageBox.Show("Please select a drive first");
+                return;
+            }
+
+            var coresPath = Path.Combine(_selectedDrivePath, "cores");
+            if (!Directory.Exists(coresPath))
+            {
+                MessageBox.Show("No cores directory found on the selected drive");
+                return;
+            }
+
+            try
+            {
+                System.Diagnostics.Process.Start("explorer.exe", coresPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening explorer: {ex.Message}");
+            }
+        }
+
         private void UpdateFileListForConfig()
         {
             if (_releaseInfo == null || _remoteFiles == null) return;
