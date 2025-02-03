@@ -406,8 +406,33 @@ namespace TangCoresSetup
                     } while (isMoreToRead);
                 }
 
+                // Archive old files not in remote list
+                var archivePath = Path.Combine(_selectedDrivePath, "cores", "archive");
+                Directory.CreateDirectory(archivePath);
+                
+                var localFiles = Directory.GetFiles(coresPath)
+                    .Select(Path.GetFileName)
+                    .ToList();
+
+                foreach (var localFile in localFiles)
+                {
+                    if (_remoteFiles != null && !_remoteFiles.Any(f => f.Filename == localFile))
+                    {
+                        var source = Path.Combine(coresPath, localFile);
+                        var destination = Path.Combine(archivePath, localFile);
+                        
+                        // If file already exists in archive, delete it first
+                        if (File.Exists(destination))
+                        {
+                            File.Delete(destination);
+                        }
+                        
+                        File.Move(source, destination);
+                    }
+                }
+
                 progressDialog.Close();
-                MessageBox.Show("Upgrade completed successfully!");
+                MessageBox.Show("Upgrade completed successfully! Old files have been archived.");
                 UpdateLocalFilesList();
             }
             catch (Exception ex)
