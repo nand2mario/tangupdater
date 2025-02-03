@@ -173,15 +173,14 @@ namespace TangCoresSetup
 
                 // Match against local board config
                 var config = MatchConfig(releaseInfo.Configs, _localFiles);
-                if (config != null)
+                if (config == null) config = releaseInfo.Configs[0];
+
+                // Select the matched configuration in the dropdown
+                var matchedItem = ConfigComboBox.Items.Cast<dynamic>()
+                    .FirstOrDefault(item => item.Name == config);
+                if (matchedItem != null)
                 {
-                    // Select the matched configuration in the dropdown
-                    var matchedItem = ConfigComboBox.Items.Cast<dynamic>()
-                        .FirstOrDefault(item => item.Name == config);
-                    if (matchedItem != null)
-                    {
-                        ConfigComboBox.SelectedItem = matchedItem;
-                    }
+                    ConfigComboBox.SelectedItem = matchedItem;
                 }
 
                 // Find files that need updating
@@ -202,15 +201,6 @@ namespace TangCoresSetup
                     return;
                 }
 
-                var result = MessageBox.Show(
-                    $"{updatesAvailable.Count} updates available. Do you want to upgrade?",
-                    "Updates Available",
-                    MessageBoxButton.YesNo);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    await PerformUpgrade(updatesAvailable);
-                }
             }
             catch (Exception ex)
             {
