@@ -1,0 +1,19 @@
+<Window x:Class="TangCoresSetup.HelpDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Welcome to TangCores Setup" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <ScrollViewer>
+        <StackPanel Margin="10">
+            <Image Source="components.jpg" Stretch="Uniform" Margin="0,0,0,10"/>
+            <TextBlock>
+                <Run Text="This program helps you to set up your TangCores build easily."/><LineBreak/><LineBreak/>
+                <Run Text="Get these ready before you begin:"/><LineBreak/>
+                <Run Text="• The Tang Console 60K board, with the SDRAM module, and the DS2 PMOD module."/><LineBreak/>
+                <Run Text="• A Micro-SD card, formatted in FAT32 or exFAT."/><LineBreak/>
+                <Run Text="• Connect the Tang Console and Micro-SD card to this computer with USB cable and card reader."/><LineBreak/><LineBreak/>
+                <Run Text="The 'SD card setup' tab helps you prepare the Micro-SD card. Then the 'Board setup' tab helps you set up your Tang Console board. Follow instructions on these tabs to continue."/>
+            </TextBlock>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

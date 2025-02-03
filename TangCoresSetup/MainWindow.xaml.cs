@@ -52,6 +52,15 @@ namespace TangCoresSetup
             public List<string> Files { get; set; } = new();
         }
 
+        private void HelpHyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            var helpDialog = new HelpDialog
+            {
+                Owner = this
+            };
+            helpDialog.ShowDialog();
+        }
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             RefreshDriveList();

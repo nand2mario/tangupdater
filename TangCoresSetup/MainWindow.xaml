@@ -7,7 +7,16 @@
         mc:Ignorable="d"
         Title="TangCores Setup" Height="450" Width="800">
     <Grid>
-        <TabControl>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="0,5,10,0">
+            <Hyperlink Click="HelpHyperlink_Click">Help?</Hyperlink>
+        </TextBlock>
+        
+        <TabControl Grid.Row="1">
             <TabItem Header="SD card setup">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
