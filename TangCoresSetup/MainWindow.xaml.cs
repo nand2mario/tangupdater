@@ -40,8 +40,8 @@ namespace TangCoresSetup
 
         private class ReleaseInfo
         {
-            public List<RemoteFile> Files { get; set; } = new();
-            public List<Release> Releases { get; set; } = new();
+            public List<RemoteFile> Latest { get; set; } = new();
+            public List<string> Configs { get; set; } = new();
         }
 
         private class Release
@@ -152,14 +152,16 @@ namespace TangCoresSetup
                 };
                 var releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
 
-                if (releaseInfo == null || !releaseInfo.Files.Any())
+                if (releaseInfo == null || !releaseInfo.Latest.Any())
                 {
                     MessageBox.Show("Failed to parse update information");
                     return;
                 }
-
-                _remoteFiles = releaseInfo.Files;
+                _remoteFiles = releaseInfo.Latest;
                 RemoteFilesList.Items.Clear();
+
+                // Match against local board config
+                var config = releaseInfo.Configs[0];
 
                 // Find files that need updating
                 var updatesAvailable = new List<RemoteFile>();
@@ -169,7 +171,7 @@ namespace TangCoresSetup
                     if (localFile == null || localFile.Sha1 != remoteFile.Sha1)
                     {
                         updatesAvailable.Add(remoteFile);
-                        RemoteFilesList.Items.Add($"{remoteFile.Filename} (new)");
+                        RemoteFilesList.Items.Add($"{remoteFile.Filename}");
                     }
                 }
 
