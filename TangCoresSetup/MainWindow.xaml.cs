@@ -143,7 +143,6 @@ namespace TangCoresSetup
                 .Select(f => new LocalFile
                 {
                     Filename = Path.GetFileName(f),
-                    Sha1 = ComputeSha1(f)
                 })
                 .ToList();
 
@@ -152,14 +151,6 @@ namespace TangCoresSetup
             {
                 LocalFilesList.Items.Add(file.Filename);
             }
-        }
-
-        private static string ComputeSha1(string filePath)
-        {
-            using var stream = File.OpenRead(filePath);
-            using var sha1 = SHA1.Create();
-            var hash = sha1.ComputeHash(stream);
-            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
         private void DriveComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -590,6 +581,9 @@ namespace TangCoresSetup
                 AppendBoardOutput("Firmware .bin file not found on SD card");
                 return;
             }
+
+            // need to convert .bin to .fs first
+
 
             await RunProgrammerCommand($"-r 38 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
         }
