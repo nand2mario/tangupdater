@@ -527,6 +527,7 @@ namespace TangCoresSetup
                 using var outputReader = process.StandardOutput;
                 var buffer = new char[1];
                 var lineBuilder = new StringBuilder();
+                var cr = false;
                 
                 while (!outputReader.EndOfStream)
                 {
@@ -535,36 +536,22 @@ namespace TangCoresSetup
                     
                     if (buffer[0] == '\r')
                     {
-                        // Remove last line and prepare to overwrite it
-                        if (BoardOutputText.Dispatcher.CheckAccess())
-                        {
-                            if (BoardOutputText.LineCount > 0)
-                            {
-                                BoardOutputText.Text = BoardOutputText.Text.Remove(
-                                    BoardOutputText.GetLineText(BoardOutputText.LineCount - 1));
-                            }
-                        }
-                        else
-                        {
-                            BoardOutputText.Dispatcher.Invoke(() =>
-                            {
-                                if (BoardOutputText.LineCount > 0)
-                                {
-                                    BoardOutputText.Text = BoardOutputText.Text.Remove(
-                                        BoardOutputText.GetLineText(BoardOutputText.LineCount - 1));
-                                }
-                            });
-                        }
-                        lineBuilder.Clear();
+                        cr = true;
                     }
                     else if (buffer[0] == '\n')
                     {
                         // Complete line - append it
                         AppendBoardOutput(lineBuilder.ToString());
-                        lineBuilder.Clear();
+                        cr = true;
                     }
                     else
                     {
+                        if (cr)
+                        {
+                            // New line - clear the line builder
+                            lineBuilder.Clear();
+                            cr = false;
+                        }
                         // Regular character - add to current line
                         lineBuilder.Append(buffer[0]);
                     }
