@@ -13,7 +13,7 @@
             <StackPanel>
                 <TextBlock HorizontalAlignment="Center" Margin="0,0,0,10"><Run Text="Welcome to TangCores Setup" FontSize="18"></Run></TextBlock>
                 <Image Source="/components.jpg" Stretch="Uniform" Margin="0,0,0,10" Height="275" Width="366"/>
-                <TextBlock>
+                <TextBlock TextWrapping="Wrap">
                     <Run Text="This tool helps you set up your TangCores build easily."/><LineBreak/><LineBreak/>
                     <Run Text="Get these ready before you begin:"/><LineBreak/>
                     <Run Text="• The Tang Console 60K board, with the SDRAM module, and the DS2 PMOD module."/><LineBreak/>
