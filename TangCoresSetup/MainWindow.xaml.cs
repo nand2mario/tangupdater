@@ -61,6 +61,39 @@ namespace TangCoresSetup
             helpDialog.ShowDialog();
         }
 
+        private async void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl && e.AddedItems.Count > 0)
+            {
+                var selectedTab = e.AddedItems[0] as TabItem;
+                if (selectedTab?.Header?.ToString() == "Board setup")
+                {
+                    if (!IsProgrammerAvailable())
+                    {
+                        var result = MessageBox.Show("Programmer tool not found. Download it now? (Approx. 100MB)", 
+                            "Programmer Required", 
+                            MessageBoxButton.YesNo);
+                        
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            await DownloadAndExtractProgrammer();
+                            
+                            if (!IsProgrammerAvailable())
+                            {
+                                MessageBox.Show("Board setup cannot proceed without the programmer tool.");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Board setup cannot proceed without the programmer tool.");
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             RefreshDriveList();
@@ -336,6 +369,42 @@ namespace TangCoresSetup
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening explorer: {ex.Message}");
+            }
+        }
+
+        private bool IsProgrammerAvailable()
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var programmerPath = Path.Combine(exePath, "Programmer", "bin", "programmer_cli.exe");
+            return File.Exists(programmerPath);
+        }
+
+        private async Task DownloadAndExtractProgrammer()
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var zipPath = Path.Combine(exePath, "programmer.zip");
+            var programmerUrl = "https://cdn.gowinsemi.com.cn/programmer1.9.11(build41225).Win64.zip";
+
+            try
+            {
+                using var client = new HttpClient();
+                var response = await client.GetAsync(programmerUrl);
+                response.EnsureSuccessStatusCode();
+                
+                await using var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await response.Content.CopyToAsync(fs);
+                
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath);
+                File.Delete(zipPath);
+                
+                if (!IsProgrammerAvailable())
+                {
+                    MessageBox.Show("Failed to install programmer. Please try again.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error downloading programmer: {ex.Message}");
             }
         }
 

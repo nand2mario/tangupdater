@@ -12,7 +12,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TabControl Grid.RowSpan="2">
+        <TabControl Grid.RowSpan="2" SelectionChanged="TabControl_SelectionChanged">
             <TabItem Header="SD card setup">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
