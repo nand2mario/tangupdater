@@ -435,12 +435,35 @@ namespace TangCoresSetup
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath);
                 File.Delete(zipPath);
                 
-                // Move "Programmer" directory to exePath
-                var programmerDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer");
-                if (Directory.Exists(programmerDir))
+                // Move all contents from extracted directory to exePath
+                var extractedDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64");
+                if (Directory.Exists(extractedDir))
                 {
-                    Directory.Move(programmerDir, Path.Combine(exePath, "Programmer"));
-                    Directory.Delete(Path.Combine(exePath, "programmer1.9.11(build41225).Win64"), true);
+                    // Move all files and directories
+                    foreach (var dir in Directory.GetDirectories(extractedDir))
+                    {
+                        var dirName = Path.GetFileName(dir);
+                        var destDir = Path.Combine(exePath, dirName);
+                        if (Directory.Exists(destDir))
+                        {
+                            Directory.Delete(destDir, true);
+                        }
+                        Directory.Move(dir, destDir);
+                    }
+
+                    foreach (var file in Directory.GetFiles(extractedDir))
+                    {
+                        var fileName = Path.GetFileName(file);
+                        var destFile = Path.Combine(exePath, fileName);
+                        if (File.Exists(destFile))
+                        {
+                            File.Delete(destFile);
+                        }
+                        File.Move(file, destFile);
+                    }
+
+                    // Clean up empty extracted directory
+                    Directory.Delete(extractedDir);
                 }
 
                 if (!IsProgrammerAvailable())
