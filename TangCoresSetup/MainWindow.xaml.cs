@@ -511,12 +511,49 @@ namespace TangCoresSetup
 
                 using var process = new System.Diagnostics.Process();
                 process.StartInfo = processStartInfo;
-                process.OutputDataReceived += (sender, e) => AppendBoardOutput(e.Data);
-                process.ErrorDataReceived += (sender, e) => AppendBoardOutput(e.Data);
+
+                var outputBuilder = new StringBuilder();
+                process.OutputDataReceived += (sender, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                    {
+                        AppendBoardOutput(e.Data);
+                    }
+                };
 
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                
+                // Read standard output directly to handle carriage returns
+                using var outputReader = process.StandardOutput;
+                while (!outputReader.EndOfStream)
+                {
+                    var line = await outputReader.ReadLineAsync();
+                    if (line != null)
+                    {
+                        // Handle carriage returns by clearing previous line
+                        if (line.Contains('\r'))
+                        {
+                            var lines = line.Split('\r');
+                            var lastLine = lines.Last().Trim();
+                            if (!string.IsNullOrEmpty(lastLine))
+                            {
+                                AppendBoardOutput(lastLine);
+                            }
+                        }
+                        else
+                        {
+                            AppendBoardOutput(line);
+                        }
+                    }
+                }
+
+                // Read standard error normally
+                using var errorReader = process.StandardError;
+                var error = await errorReader.ReadToEndAsync();
+                if (!string.IsNullOrEmpty(error))
+                {
+                    AppendBoardOutput(error);
+                }
 
                 await process.WaitForExitAsync();
                 
