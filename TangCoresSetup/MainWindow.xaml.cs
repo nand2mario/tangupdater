@@ -385,14 +385,51 @@ namespace TangCoresSetup
             var zipPath = Path.Combine(exePath, "programmer.zip");
             var programmerUrl = "https://cdn.gowinsemi.com.cn/programmer1.9.11(build41225).Win64.zip";
 
+            var progressDialog = new ProgressDialog
+            {
+                Owner = this
+            };
+
             try
             {
-                using var client = new HttpClient();
-                var response = await client.GetAsync(programmerUrl);
-                response.EnsureSuccessStatusCode();
+                progressDialog.Show();
                 
+                using var client = new HttpClient();
+                var response = await client.GetAsync(programmerUrl, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                var bytesReceived = 0L;
+
                 await using var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                await response.Content.CopyToAsync(fs);
+                await using var contentStream = await response.Content.ReadAsStreamAsync();
+                
+                var buffer = new byte[8192];
+                var isMoreToRead = true;
+
+                do
+                {
+                    if (progressDialog.IsCancelled)
+                    {
+                        MessageBox.Show("Download cancelled");
+                        return;
+                    }
+
+                    var read = await contentStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (read == 0)
+                    {
+                        isMoreToRead = false;
+                    }
+                    else
+                    {
+                        await fs.WriteAsync(buffer, 0, read);
+                        bytesReceived += read;
+                        progressDialog.UpdateProgrammerProgress(bytesReceived, totalBytes);
+                    }
+                } while (isMoreToRead);
+
+                progressDialog.StatusText.Text = "Extracting Programmer...";
+                progressDialog.FileProgressBar.Value = 0;
                 
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath);
                 File.Delete(zipPath);
@@ -405,6 +442,10 @@ namespace TangCoresSetup
             catch (Exception ex)
             {
                 MessageBox.Show($"Error downloading programmer: {ex.Message}");
+            }
+            finally
+            {
+                progressDialog.Close();
             }
         }
 

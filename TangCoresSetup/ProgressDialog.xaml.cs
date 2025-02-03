@@ -17,6 +17,13 @@ namespace TangCoresSetup
             OverallProgressBar.Value = current * 100 / total;
         }
 
+        public void UpdateProgrammerProgress(long bytesReceived, long totalBytes)
+        {
+            StatusText.Text = "Downloading Programmer...";
+            FileProgressBar.Value = bytesReceived * 100 / totalBytes;
+            FileSizeText.Text = FormatBytes(bytesReceived) + " / " + FormatBytes(totalBytes);
+        }
+
         public void UpdateFileProgress(long bytesReceived, long totalBytes)
         {
             if (totalBytes > 0)
