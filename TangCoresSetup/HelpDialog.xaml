@@ -9,7 +9,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
-        <ScrollViewer Grid.Row="0">
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Hidden">
             <StackPanel>
                 <TextBlock HorizontalAlignment="Center" Margin="0,0,0,10"><Run Text="Welcome to TangCores Setup" FontSize="18"></Run></TextBlock>
                 <Image Source="/components.jpg" Stretch="Uniform" Margin="0,0,0,10" Height="275" Width="366"/>
