@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>tangconsole.ico</ApplicationIcon>
+    <AssemblyName>Setup</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="components.jpg" />
