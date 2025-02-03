@@ -160,6 +160,17 @@ namespace TangCoresSetup
                 _remoteFiles = releaseInfo.Latest;
                 RemoteFilesList.Items.Clear();
 
+                // Populate configuration dropdown
+                ConfigComboBox.Items.Clear();
+                foreach (var config in releaseInfo.Configs)
+                {
+                    ConfigComboBox.Items.Add(new { Name = config });
+                }
+                if (releaseInfo.Configs.Any())
+                {
+                    ConfigComboBox.SelectedIndex = 0;
+                }
+
                 // Match against local board config
                 var config = releaseInfo.Configs[0];
 

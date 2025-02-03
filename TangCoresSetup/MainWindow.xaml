@@ -19,6 +19,9 @@
                         <ComboBox x:Name="DriveComboBox" Width="200" Margin="0,0,10,0"
                                 SelectionChanged="DriveComboBox_SelectionChanged"/>
                         <Button Content="Refresh Drives" Click="RefreshDrives_Click" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="ConfigComboBox" Width="150" Margin="0,0,10,0" 
+                                DisplayMemberPath="Name" IsEditable="True" IsReadOnly="True"
+                                SelectedIndex="0" />
                         <Button Content="Check Updates" Click="CheckUpdates_Click"/>
                     </StackPanel>
                     
