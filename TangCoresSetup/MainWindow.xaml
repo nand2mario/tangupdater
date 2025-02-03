@@ -59,7 +59,7 @@
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                 <Button Content="Select all" Click="SelectAll_Click" Margin="0,0,5,0"/>
                                 <Button Content="Select none" Click="SelectNone_Click" Margin="5,0,5,0"/>
-                                <Button Content="Update!" Click="Update_Click" Margin="5,0,0,0"/>
+                                <Button Content="Upgrade now!" Click="Update_Click" Margin="5,0,0,0"/>
                             </StackPanel>
                         </StackPanel>
                         
