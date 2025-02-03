@@ -16,6 +16,7 @@ namespace TangCoresSetup
     public partial class MainWindow : Window
     {
         private const string UpdateUrl = "https://raw.githubusercontent.com/nand2mario/tangcores/main/files/list.json";
+        private const string ProgrammerCli = "programmer1.9.11(build41225).Win64\\Programmer\\bin\\programmer_cli.exe";
         private readonly HttpClient _httpClient = new();
         private string? _selectedDrivePath;
         private List<RemoteFile>? _remoteFiles;
@@ -375,7 +376,7 @@ namespace TangCoresSetup
         private bool IsProgrammerAvailable()
         {
             var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var programmerPath = Path.Combine(exePath, "Programmer", "bin", "programmer_cli.exe");
+            var programmerPath = Path.Combine(exePath, ProgrammerCli);
             return File.Exists(programmerPath);
         }
 
@@ -432,39 +433,8 @@ namespace TangCoresSetup
                 progressDialog.StatusText.Text = "Extracting Programmer...";
                 progressDialog.FileProgressBar.Value = 0;
                 
-                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath);
+                System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath, true);
                 File.Delete(zipPath);
-                
-                // Move all contents from extracted directory to exePath
-                var extractedDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64");
-                if (Directory.Exists(extractedDir))
-                {
-                    // Move all files and directories
-                    foreach (var dir in Directory.GetDirectories(extractedDir))
-                    {
-                        var dirName = Path.GetFileName(dir);
-                        var destDir = Path.Combine(exePath, dirName);
-                        if (Directory.Exists(destDir))
-                        {
-                            Directory.Delete(destDir, true);
-                        }
-                        Directory.Move(dir, destDir);
-                    }
-
-                    foreach (var file in Directory.GetFiles(extractedDir))
-                    {
-                        var fileName = Path.GetFileName(file);
-                        var destFile = Path.Combine(exePath, fileName);
-                        if (File.Exists(destFile))
-                        {
-                            File.Delete(destFile);
-                        }
-                        File.Move(file, destFile);
-                    }
-
-                    // Clean up empty extracted directory
-                    Directory.Delete(extractedDir);
-                }
 
                 if (!IsProgrammerAvailable())
                 {
