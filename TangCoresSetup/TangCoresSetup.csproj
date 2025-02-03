@@ -7,10 +7,14 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="components.jpg" />
+    <None Remove="tangconsole.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="components.jpg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="tangconsole.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 </Project>
