@@ -529,28 +529,27 @@ namespace TangCoresSetup
                 var lineBuilder = new StringBuilder();
                 var cr = false;
                 int cch;
+                int lastPos = 0;
                 
                 while ((cch = await outputReader.ReadAsync(buffer, 0, 1)) > 0)
                 {
                     if (buffer[0] == '\r')
                     {
-                        cr = true;
-                    }
-                    else if (buffer[0] == '\n')
-                    {
-                        // Complete line - append it
+                        if (cr)     // last line ends with \r only, so clear it first
+                        {
+                            BoardOutputText.Text = BoardOutputText.Text.Remove(lastPos);
+                        }
+                        lastPos = BoardOutputText.Text.Length;
                         AppendBoardOutput(lineBuilder.ToString());
                         lineBuilder.Clear();
                         cr = true;
                     }
+                    else if (buffer[0] == '\n')
+                    {
+                        cr = false;
+                    }
                     else
                     {
-                        if (cr)
-                        {
-                            // New line - clear the line builder
-                            lineBuilder.Clear();
-                            cr = false;
-                        }
                         // Regular character - add to current line
                         lineBuilder.Append(buffer[0]);
                     }
