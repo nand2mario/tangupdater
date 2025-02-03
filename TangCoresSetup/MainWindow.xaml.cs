@@ -363,11 +363,38 @@ namespace TangCoresSetup
                     var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{file.Filename}";
                     var destination = Path.Combine(coresPath, file.Filename);
 
-                    var response = await _httpClient.GetAsync(url);
+                    using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
 
+                    var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                    var bytesReceived = 0L;
+
                     await using var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None);
-                    await response.Content.CopyToAsync(fileStream);
+                    await using var contentStream = await response.Content.ReadAsStreamAsync();
+                    
+                    var buffer = new byte[8192];
+                    var isMoreToRead = true;
+
+                    do
+                    {
+                        if (progressDialog.IsCancelled)
+                        {
+                            MessageBox.Show("Upgrade cancelled");
+                            return;
+                        }
+
+                        var read = await contentStream.ReadAsync(buffer, 0, buffer.Length);
+                        if (read == 0)
+                        {
+                            isMoreToRead = false;
+                        }
+                        else
+                        {
+                            await fileStream.WriteAsync(buffer, 0, read);
+                            bytesReceived += read;
+                            progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
+                        }
+                    } while (isMoreToRead);
                 }
 
                 progressDialog.Close();
