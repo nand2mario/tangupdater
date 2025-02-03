@@ -55,6 +55,7 @@ namespace TangCoresSetup
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             RefreshDriveList();
+            CheckUpdates_Click(null, null);
         }
 
         private void RefreshDriveList()
@@ -107,7 +108,7 @@ namespace TangCoresSetup
             LocalFilesList.Items.Clear();
             foreach (var file in _localFiles)
             {
-                LocalFilesList.Items.Add($"{file.Filename} ({file.Sha1[..8]}...)");
+                LocalFilesList.Items.Add(file.Filename);
             }
         }
 
@@ -319,7 +320,7 @@ namespace TangCoresSetup
                     !string.IsNullOrEmpty(selectedConfig) && remoteFile.Filename.Contains(selectedConfig, StringComparison.OrdinalIgnoreCase))
                 {
                     var localFile = _localFiles?.FirstOrDefault(f => f.Filename == remoteFile.Filename);
-                    if (localFile == null || localFile.Sha1 != remoteFile.Sha1)
+                    if (localFile == null)
                     {
                         updatesAvailable.Add(remoteFile);
                         RemoteFilesList.Items.Add(remoteFile.Filename.Replace("_", "__"));       // make sure _ is properly displayed
@@ -378,6 +379,9 @@ namespace TangCoresSetup
                 progressDialog.Close();
                 MessageBox.Show($"Error during upgrade: {ex.Message}");
             }
+
+            // Update remote file list display
+            UpdateFileListForConfig();
         }
     }
 }
