@@ -494,7 +494,7 @@ namespace TangCoresSetup
             }
         }
 
-        private async Task RunProgrammerCommand(string arguments)
+        private async Task<int> RunProgrammerCommand(string arguments)
         {
             var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var programmerPath = Path.Combine(exePath, ProgrammerCli);
@@ -530,17 +530,29 @@ namespace TangCoresSetup
 
                 await process.WaitForExitAsync();
                 
-                AppendBoardOutput($"Process exited with code {process.ExitCode}");
+                var exitCode = process.ExitCode;
+                AppendBoardOutput($"Process exited with code {exitCode}");
+                return exitCode;
             }
             catch (Exception ex)
             {
                 AppendBoardOutput($"Error: {ex.Message}");
+                return -1;
             }
         }
 
         private async void CheckBoard_Click(object sender, RoutedEventArgs e)
         {
-            await RunProgrammerCommand("--scan");
+            FlashSNESTangButton.IsEnabled = false;
+            FlashFirmwareButton.IsEnabled = false;
+            
+            var exitCode = await RunProgrammerCommand("--scan");
+            
+            if (exitCode == 0)
+            {
+                FlashSNESTangButton.IsEnabled = true;
+                FlashFirmwareButton.IsEnabled = true;
+            }
         }
 
         private async void FlashSNESTang_Click(object sender, RoutedEventArgs e)
