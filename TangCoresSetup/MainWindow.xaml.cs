@@ -483,14 +483,21 @@ namespace TangCoresSetup
 
         private void AppendBoardOutput(string text)
         {
-            BoardOutputText.AppendText($"{DateTime.Now:HH:mm:ss} - {text}{Environment.NewLine}");
-            BoardOutputText.ScrollToEnd();
+            if (BoardOutputText.Dispatcher.CheckAccess())
+            {
+                BoardOutputText.AppendText($"{DateTime.Now:HH:mm:ss} - {text}{Environment.NewLine}");
+                BoardOutputText.ScrollToEnd();
+            }
+            else
+            {
+                BoardOutputText.Dispatcher.Invoke(() => AppendBoardOutput(text));
+            }
         }
 
         private async Task RunProgrammerCommand(string arguments)
         {
             var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var programmerPath = Path.Combine(exePath, "Programmer", "bin", "programmer_cli.exe");
+            var programmerPath = Path.Combine(exePath, ProgrammerCli);
 
             if (!File.Exists(programmerPath))
             {
