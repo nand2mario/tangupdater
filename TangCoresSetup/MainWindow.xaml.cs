@@ -502,7 +502,7 @@ namespace TangCoresSetup
             if (!File.Exists(programmerPath))
             {
                 AppendBoardOutput("Programmer not found. Please download it first.");
-                return;
+                return -1;
             }
 
             try
@@ -543,15 +543,15 @@ namespace TangCoresSetup
 
         private async void CheckBoard_Click(object sender, RoutedEventArgs e)
         {
-            FlashSNESTangButton.IsEnabled = false;
-            FlashFirmwareButton.IsEnabled = false;
+            FlashSNESTang.IsEnabled = false;
+            FlashFirmware.IsEnabled = false;
             
             var exitCode = await RunProgrammerCommand("--scan");
             
             if (exitCode == 0)
             {
-                FlashSNESTangButton.IsEnabled = true;
-                FlashFirmwareButton.IsEnabled = true;
+                FlashSNESTang.IsEnabled = true;
+                FlashFirmware.IsEnabled = true;
             }
         }
 
@@ -563,7 +563,7 @@ namespace TangCoresSetup
                 return;
             }
 
-            var fsFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "snes_*.fs")
+            var fsFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "snestang_*.fs")
                 .FirstOrDefault();
 
             if (string.IsNullOrEmpty(fsFile))
