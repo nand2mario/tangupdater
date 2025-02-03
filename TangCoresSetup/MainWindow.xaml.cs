@@ -525,26 +525,55 @@ namespace TangCoresSetup
                 
                 // Read standard output directly to handle carriage returns
                 using var outputReader = process.StandardOutput;
+                var buffer = new char[1];
+                var lineBuilder = new StringBuilder();
+                
                 while (!outputReader.EndOfStream)
                 {
-                    var line = await outputReader.ReadLineAsync();
-                    if (line != null)
+                    var charsRead = await outputReader.ReadAsync(buffer, 0, 1);
+                    if (charsRead == 0) continue;
+                    
+                    if (buffer[0] == '\r')
                     {
-                        // Handle carriage returns by clearing previous line
-                        if (line.Contains('\r'))
+                        // Remove last line and prepare to overwrite it
+                        if (BoardOutputText.Dispatcher.CheckAccess())
                         {
-                            var lines = line.Split('\r');
-                            var lastLine = lines.Last().Trim();
-                            if (!string.IsNullOrEmpty(lastLine))
+                            if (BoardOutputText.LineCount > 0)
                             {
-                                AppendBoardOutput(lastLine);
+                                BoardOutputText.Text = BoardOutputText.Text.Remove(
+                                    BoardOutputText.GetLineText(BoardOutputText.LineCount - 1));
                             }
                         }
                         else
                         {
-                            AppendBoardOutput(line);
+                            BoardOutputText.Dispatcher.Invoke(() =>
+                            {
+                                if (BoardOutputText.LineCount > 0)
+                                {
+                                    BoardOutputText.Text = BoardOutputText.Text.Remove(
+                                        BoardOutputText.GetLineText(BoardOutputText.LineCount - 1));
+                                }
+                            });
                         }
+                        lineBuilder.Clear();
                     }
+                    else if (buffer[0] == '\n')
+                    {
+                        // Complete line - append it
+                        AppendBoardOutput(lineBuilder.ToString());
+                        lineBuilder.Clear();
+                    }
+                    else
+                    {
+                        // Regular character - add to current line
+                        lineBuilder.Append(buffer[0]);
+                    }
+                }
+                
+                // Append any remaining text in the buffer
+                if (lineBuilder.Length > 0)
+                {
+                    AppendBoardOutput(lineBuilder.ToString());
                 }
 
                 // Read standard error normally
