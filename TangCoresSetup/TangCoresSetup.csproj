@@ -5,4 +5,12 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="components.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="components.jpg">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
 </Project>

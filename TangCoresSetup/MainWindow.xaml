@@ -11,32 +11,28 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="0,5,10,0">
-            <Hyperlink Click="HelpHyperlink_Click">Help?</Hyperlink>
-        </TextBlock>
-        
-        <TabControl Grid.Row="1">
+
+        <TabControl Grid.RowSpan="2">
             <TabItem Header="SD card setup">
                 <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    
+
                     <Grid Grid.Row="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <StackPanel Orientation="Horizontal">
                             <ComboBox x:Name="DriveComboBox" Width="200" Margin="0,0,10,0"
                                     SelectionChanged="DriveComboBox_SelectionChanged"/>
                             <Button Content="Refresh Drives" Click="RefreshDrives_Click" Margin="0,0,10,0"/>
                             <Button Content="Check Updates" Click="CheckUpdates_Click"/>
                         </StackPanel>
-                        
+
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Configuration:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <ComboBox x:Name="ConfigComboBox" Width="150" 
@@ -44,18 +40,18 @@
                                     SelectedIndex="0" SelectionChanged="ConfigComboBox_SelectionChanged"/>
                         </StackPanel>
                     </Grid>
-                    
+
                     <Grid Grid.Row="1" Margin="0,20,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
+
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
                             <TextBlock Text="Local Files" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ListBox x:Name="LocalFilesList" Height="200"/>
                         </StackPanel>
-                        
+
                         <StackPanel Grid.Column="1">
                             <TextBlock Text="Available Updates" FontWeight="Bold" Margin="0,0,0,5"/>
                             <ListBox x:Name="RemoteFilesList" Height="200">
@@ -71,17 +67,19 @@
                                 <Button Content="Download now!" Click="Update_Click" Margin="5,0,0,0" FontWeight="Bold"/>
                             </StackPanel>
                         </StackPanel>
-                        
+
                         <TextBlock x:Name="SelectedDriveText" Grid.ColumnSpan="2" Margin="0,10" VerticalAlignment="Bottom"/>
                     </Grid>
                 </Grid>
             </TabItem>
-            
+
             <TabItem Header="Board setup">
                 <Grid Margin="10">
                     <!-- Board setup content will go here -->
                 </Grid>
             </TabItem>
         </TabControl>
+
+        <TextBlock Grid.Row="0" HorizontalAlignment="Right" Margin="0,5,10,0"><Hyperlink Click="HelpHyperlink_Click"><Run Text="Help?"/></Hyperlink></TextBlock>
     </Grid>
 </Window>

@@ -13,13 +13,14 @@
             <StackPanel>
                 <TextBlock HorizontalAlignment="Center" Margin="0,0,0,10"><Run Text="Welcome to TangCores Setup" FontSize="18"></Run></TextBlock>
                 <Image Source="/components.jpg" Stretch="Uniform" Margin="0,0,0,10" Height="275" Width="366"/>
-                <TextBlock TextWrapping="Wrap">
-                    <Run Text="This tool helps you set up your TangCores build easily."/><LineBreak/><LineBreak/>
-                    <Run Text="Get these ready before you begin:"/><LineBreak/>
+                <TextBlock TextWrapping="Wrap" Margin="0,10,0,0">
+                    <Run Text="This tool helps you set up your Tang Console to run the TangCores collection."/><LineBreak/><LineBreak/>
+                    <Run Text="Get these ready before you begin,"/><LineBreak/>
                     <Run Text="• The Tang Console 60K board, with the SDRAM module, and the DS2 PMOD module."/><LineBreak/>
                     <Run Text="• A Micro-SD card, formatted in FAT32 or exFAT."/><LineBreak/>
                     <Run Text="• Connect the Tang Console and Micro-SD card to this computer with USB cable and card reader."/><LineBreak/><LineBreak/>
-                    <Run Text="The 'SD card setup' tab helps you prepare the Micro-SD card. Then the 'Board setup' tab helps you set up your Tang Console board. Follow instructions on these tabs to continue."/>
+                    <Run Text="The "/><Run Text="SD card" FontWeight="Bold"/><Run Text=" setup tab helps you prepare the Micro-SD card. Then the "/>
+                    <Run Text="Board setup" FontWeight="Bold"/><Run Text=" tab helps you set up your Tang Console board. Follow instructions on these tabs to continue."/>
                 </TextBlock>
             </StackPanel>
         </ScrollViewer>
