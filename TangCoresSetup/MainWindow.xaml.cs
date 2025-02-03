@@ -194,6 +194,8 @@ namespace TangCoresSetup
                         RemoteFilesList.Items.Add($"{remoteFile.Filename}");
                     }
                 }
+                // Select all files by default
+                SelectAll_Click(null, null);
 
                 if (!updatesAvailable.Any())
                 {
@@ -235,6 +237,78 @@ namespace TangCoresSetup
 
             // Only return if we found at least one match
             return bestMatch.Value > 0 ? bestMatch.Key : null;
+        }
+
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in RemoteFilesList.Items)
+            {
+                var container = RemoteFilesList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+                var checkBox = FindVisualChild<CheckBox>(container);
+                if (checkBox != null)
+                {
+                    checkBox.IsChecked = true;
+                }
+            }
+        }
+
+        private void SelectNone_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in RemoteFilesList.Items)
+            {
+                var container = RemoteFilesList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+                var checkBox = FindVisualChild<CheckBox>(container);
+                if (checkBox != null)
+                {
+                    checkBox.IsChecked = false;
+                }
+            }
+        }
+
+        private void Update_Click(object sender, RoutedEventArgs e)
+        {
+            var filesToUpdate = new List<RemoteFile>();
+            foreach (var item in RemoteFilesList.Items)
+            {
+                var container = RemoteFilesList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+                var checkBox = FindVisualChild<CheckBox>(container);
+                if (checkBox != null && checkBox.IsChecked == true)
+                {
+                    var filename = checkBox.Content.ToString();
+                    var remoteFile = _remoteFiles?.FirstOrDefault(f => f.Filename == filename);
+                    if (remoteFile != null)
+                    {
+                        filesToUpdate.Add(remoteFile);
+                    }
+                }
+            }
+
+            if (filesToUpdate.Any())
+            {
+                _ = PerformUpgrade(filesToUpdate);
+            }
+            else
+            {
+                MessageBox.Show("No files selected for update");
+            }
+        }
+
+        private static T? FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T t)
+                {
+                    return t;
+                }
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+            return null;
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
