@@ -196,12 +196,6 @@ namespace TangCoresSetup
                 // Update the file list for the selected configuration
                 UpdateFileListForConfig();
 
-                if (!updatesAvailable.Any())
-                {
-                    MessageBox.Show("Your TangCores are up to date!");
-                    return;
-                }
-
             }
             catch (Exception ex)
             {
@@ -240,15 +234,8 @@ namespace TangCoresSetup
 
         private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in RemoteFilesList.Items)
-            {
-                var container = RemoteFilesList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
-                var checkBox = FindVisualChild<CheckBox>(container);
-                if (checkBox != null)
-                {
-                    checkBox.IsChecked = true;
-                }
-            }
+            //for (int i = 0; i < RemoteFilesList.Items.Count; i++)
+            //    RemoteFilesList.SetSelected(i, true);
         }
 
         private void SelectNone_Click(object sender, RoutedEventArgs e)
@@ -328,7 +315,7 @@ namespace TangCoresSetup
                     if (localFile == null || localFile.Sha1 != remoteFile.Sha1)
                     {
                         updatesAvailable.Add(remoteFile);
-                        RemoteFilesList.Items.Add($"{remoteFile.Filename}");
+                        RemoteFilesList.Items.Add(remoteFile.Filename.Replace("_", "__"));       // make sure _ is properly displayed
                     }
                 }
             }
