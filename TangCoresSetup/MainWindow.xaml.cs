@@ -162,9 +162,9 @@ namespace TangCoresSetup
 
                 // Populate configuration dropdown
                 ConfigComboBox.Items.Clear();
-                foreach (var config in releaseInfo.Configs)
+                foreach (var c in releaseInfo.Configs)
                 {
-                    ConfigComboBox.Items.Add(new { Name = config });
+                    ConfigComboBox.Items.Add(new { Name = c });
                 }
                 if (releaseInfo.Configs.Any())
                 {
@@ -172,7 +172,7 @@ namespace TangCoresSetup
                 }
 
                 // Match against local board config
-                var config = releaseInfo.Configs[0];
+                var config = MatchConfig(releaseInfo.Configs, _localFiles);
 
                 // Find files that need updating
                 var updatesAvailable = new List<RemoteFile>();
