@@ -267,7 +267,7 @@ namespace TangCoresSetup
                 var checkBox = FindVisualChild<CheckBox>(container);
                 if (checkBox != null && checkBox.IsChecked == true)
                 {
-                    var filename = checkBox.Content.ToString();
+                    var filename = checkBox.Content.ToString().Replace("__", "_");
                     var remoteFile = _remoteFiles?.FirstOrDefault(f => f.Filename == filename);
                     if (remoteFile != null)
                     {
