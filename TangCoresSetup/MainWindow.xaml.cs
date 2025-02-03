@@ -20,6 +20,7 @@ namespace TangCoresSetup
         private string? _selectedDrivePath;
         private List<RemoteFile>? _remoteFiles;
         private List<LocalFile>? _localFiles;
+        private ReleaseInfo? _releaseInfo;
 
         public MainWindow()
         {
@@ -151,30 +152,29 @@ namespace TangCoresSetup
                     ReadCommentHandling = JsonCommentHandling.Skip,
                     AllowTrailingCommas = true
                 };
-                var releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
+                _releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
 
-                if (releaseInfo == null || !releaseInfo.Latest.Any())
+                if (_releaseInfo == null || !_releaseInfo.Latest.Any())
                 {
                     MessageBox.Show("Failed to parse update information");
                     return;
                 }
-                _remoteFiles = releaseInfo.Latest;
-                RemoteFilesList.Items.Clear();
-
+                _remoteFiles = _releaseInfo.Latest;
+                
                 // Populate configuration dropdown
                 ConfigComboBox.Items.Clear();
-                foreach (var c in releaseInfo.Configs)
+                foreach (var c in _releaseInfo.Configs)
                 {
                     ConfigComboBox.Items.Add(new { Name = c });
                 }
-                if (releaseInfo.Configs.Any())
+                if (_releaseInfo.Configs.Any())
                 {
                     ConfigComboBox.SelectedIndex = 0;
                 }
 
                 // Match against local board config
-                var config = MatchConfig(releaseInfo.Configs, _localFiles);
-                if (config == null) config = releaseInfo.Configs[0];
+                var config = MatchConfig(_releaseInfo.Configs, _localFiles);
+                if (config == null) config = _releaseInfo.Configs[0];
 
                 // Select the matched configuration in the dropdown
                 var matchedItem = ConfigComboBox.Items.Cast<dynamic>()
@@ -184,19 +184,8 @@ namespace TangCoresSetup
                     ConfigComboBox.SelectedItem = matchedItem;
                 }
 
-                // Find files that need updating
-                var updatesAvailable = new List<RemoteFile>();
-                foreach (var remoteFile in _remoteFiles)
-                {
-                    var localFile = _localFiles?.FirstOrDefault(f => f.Filename == remoteFile.Filename);
-                    if (localFile == null || localFile.Sha1 != remoteFile.Sha1)
-                    {
-                        updatesAvailable.Add(remoteFile);
-                        RemoteFilesList.Items.Add($"{remoteFile.Filename}");
-                    }
-                }
-                // Select all files by default
-                SelectAll_Click(null, null);
+                // Update the file list for the selected configuration
+                UpdateFileListForConfig();
 
                 if (!updatesAvailable.Any())
                 {
@@ -310,6 +299,36 @@ namespace TangCoresSetup
                 }
             }
             return null;
+        }
+
+        private void UpdateFileListForConfig()
+        {
+            if (_releaseInfo == null || _remoteFiles == null) return;
+
+            var selectedConfig = (ConfigComboBox.SelectedItem as dynamic)?.Name ?? string.Empty;
+            RemoteFilesList.Items.Clear();
+
+            var updatesAvailable = new List<RemoteFile>();
+            foreach (var remoteFile in _remoteFiles)
+            {
+                // Always show firmware files, or files matching the selected config
+                if (remoteFile.Filename.StartsWith("firmware_") && remoteFile.Filename.EndsWith(".bin") ||
+                    !string.IsNullOrEmpty(selectedConfig) && remoteFile.Filename.Contains(selectedConfig, StringComparison.OrdinalIgnoreCase))
+                {
+                    var localFile = _localFiles?.FirstOrDefault(f => f.Filename == remoteFile.Filename);
+                    if (localFile == null || localFile.Sha1 != remoteFile.Sha1)
+                    {
+                        updatesAvailable.Add(remoteFile);
+                        RemoteFilesList.Items.Add($"{remoteFile.Filename}");
+                    }
+                }
+            }
+            
+            // Select all files by default
+            SelectAll_Click(null, null);
+            
+            // Update the count display
+            SelectedDriveText.Text = $"Selected drive: {DriveComboBox.SelectedItem} | {updatesAvailable.Count} updates available";
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
