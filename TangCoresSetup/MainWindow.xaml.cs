@@ -173,6 +173,16 @@ namespace TangCoresSetup
 
                 // Match against local board config
                 var config = MatchConfig(releaseInfo.Configs, _localFiles);
+                if (config != null)
+                {
+                    // Select the matched configuration in the dropdown
+                    var matchedItem = ConfigComboBox.Items.Cast<dynamic>()
+                        .FirstOrDefault(item => item.Name == config);
+                    if (matchedItem != null)
+                    {
+                        ConfigComboBox.SelectedItem = matchedItem;
+                    }
+                }
 
                 // Find files that need updating
                 var updatesAvailable = new List<RemoteFile>();
@@ -206,6 +216,35 @@ namespace TangCoresSetup
             {
                 MessageBox.Show($"Error checking updates: {ex.Message}");
             }
+        }
+
+        private string? MatchConfig(List<string> availableConfigs, List<LocalFile>? localFiles)
+        {
+            if (localFiles == null || !localFiles.Any())
+                return null;
+
+            // Create a dictionary to count matches for each config
+            var configMatches = availableConfigs.ToDictionary(c => c, c => 0);
+
+            // Check each local file against the config patterns
+            foreach (var localFile in localFiles)
+            {
+                foreach (var config in availableConfigs)
+                {
+                    if (localFile.Filename.Contains(config, StringComparison.OrdinalIgnoreCase))
+                    {
+                        configMatches[config]++;
+                    }
+                }
+            }
+
+            // Find the config with the most matches
+            var bestMatch = configMatches
+                .OrderByDescending(kvp => kvp.Value)
+                .FirstOrDefault();
+
+            // Only return if we found at least one match
+            return bestMatch.Value > 0 ? bestMatch.Key : null;
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
