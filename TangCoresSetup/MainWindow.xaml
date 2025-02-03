@@ -32,7 +32,7 @@
                             <TextBlock Text="Configuration:" VerticalAlignment="Center" Margin="0,0,5,0"/>
                             <ComboBox x:Name="ConfigComboBox" Width="150" 
                                     DisplayMemberPath="Name" IsEditable="True" IsReadOnly="True"
-                                    SelectedIndex="0" />
+                                    SelectedIndex="0" SelectionChanged="ConfigComboBox_SelectionChanged"/>
                         </StackPanel>
                     </Grid>
                     
