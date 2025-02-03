@@ -234,8 +234,15 @@ namespace TangCoresSetup
 
         private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
-            //for (int i = 0; i < RemoteFilesList.Items.Count; i++)
-            //    RemoteFilesList.SetSelected(i, true);
+            foreach (var item in RemoteFilesList.Items)
+            {
+                var container = RemoteFilesList.ItemContainerGenerator.ContainerFromItem(item) as ListBoxItem;
+                var checkBox = FindVisualChild<CheckBox>(container);
+                if (checkBox != null)
+                {
+                    checkBox.IsChecked = true;
+                }
+            }
         }
 
         private void SelectNone_Click(object sender, RoutedEventArgs e)
