@@ -5,7 +5,7 @@
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <ScrollViewer>
         <StackPanel Margin="10">
-            <Image Source="components.jpg" Stretch="Uniform" Margin="0,0,0,10" Height="275" Width="366"/>
+            <Image Source="pack://application:,,,/TangCoresSetup;component/components.jpg" Stretch="Uniform" Margin="0,0,0,10" Height="275" Width="366"/>
             <TextBlock>
                 <Run Text="This program helps you to set up your TangCores build easily."/><LineBreak/><LineBreak/>
                 <Run Text="Get these ready before you begin:"/><LineBreak/>
