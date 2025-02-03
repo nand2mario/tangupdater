@@ -32,13 +32,11 @@ namespace TangCoresSetup
         private class RemoteFile
         {
             public string Filename { get; set; } = "";
-            public string Sha1 { get; set; } = "";
         }
 
         private class LocalFile
         {
             public string Filename { get; set; } = "";
-            public string Sha1 { get; set; } = "";
         }
 
         private class ReleaseInfo
@@ -592,7 +590,7 @@ namespace TangCoresSetup
                 return;
             }
 
-            await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
+            await RunProgrammerCommand($"-r 38 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
