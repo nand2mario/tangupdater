@@ -69,7 +69,10 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <TextBlock x:Name="SelectedDriveText" Grid.ColumnSpan="2" Margin="0,10" VerticalAlignment="Bottom"/>
+                        <Grid Grid.ColumnSpan="2" Margin="0,10" VerticalAlignment="Bottom">
+                            <TextBlock x:Name="SelectedDriveText" HorizontalAlignment="Left"/>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding BuildDate, StringFormat='Build: {0:yyyy-MM-dd}'}"/>
+                        </Grid>
                     </Grid>
                 </Grid>
             </TabItem>

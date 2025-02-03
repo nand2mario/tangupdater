@@ -15,6 +15,7 @@ namespace TangCoresSetup
 {
     public partial class MainWindow : Window
     {
+        public DateTime BuildDate { get; } = new FileInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).LastWriteTime;
         private const string UpdateUrl = "https://raw.githubusercontent.com/nand2mario/tangcores/main/files/list.json";
         private const string ProgrammerCli = "programmer1.9.11(build41225).Win64\\Programmer\\bin\\programmer_cli.exe";
         private readonly HttpClient _httpClient = new();
