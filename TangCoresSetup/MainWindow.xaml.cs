@@ -336,13 +336,29 @@ namespace TangCoresSetup
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
         {
+            var progressDialog = new ProgressDialog
+            {
+                Owner = this
+            };
+
             try
             {
                 var coresPath = Path.Combine(_selectedDrivePath, "cores");
                 Directory.CreateDirectory(coresPath);
 
-                foreach (var file in filesToUpdate)
+                progressDialog.Show();
+                
+                for (int i = 0; i < filesToUpdate.Count; i++)
                 {
+                    if (progressDialog.IsCancelled)
+                    {
+                        MessageBox.Show("Upgrade cancelled");
+                        return;
+                    }
+
+                    var file = filesToUpdate[i];
+                    progressDialog.UpdateProgress(i + 1, filesToUpdate.Count, file.Filename);
+
                     var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{file.Filename}";
                     var destination = Path.Combine(coresPath, file.Filename);
 
@@ -353,11 +369,13 @@ namespace TangCoresSetup
                     await response.Content.CopyToAsync(fileStream);
                 }
 
+                progressDialog.Close();
                 MessageBox.Show("Upgrade completed successfully!");
                 UpdateLocalFilesList();
             }
             catch (Exception ex)
             {
+                progressDialog.Close();
                 MessageBox.Show($"Error during upgrade: {ex.Message}");
             }
         }
