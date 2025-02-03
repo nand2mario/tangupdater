@@ -427,6 +427,7 @@ namespace TangCoresSetup
                         progressDialog.UpdateProgrammerProgress(bytesReceived, totalBytes);
                     }
                 } while (isMoreToRead);
+                fs.Close();
 
                 progressDialog.StatusText.Text = "Extracting Programmer...";
                 progressDialog.FileProgressBar.Value = 0;
