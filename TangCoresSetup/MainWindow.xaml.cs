@@ -582,10 +582,7 @@ namespace TangCoresSetup
                 return;
             }
 
-            // need to convert .bin to .fs first
-
-
-            await RunProgrammerCommand($"-r 38 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
+            await RunProgrammerCommand($"-r 53 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
