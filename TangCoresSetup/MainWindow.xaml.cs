@@ -435,6 +435,14 @@ namespace TangCoresSetup
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath);
                 File.Delete(zipPath);
                 
+                // Move "Programmer" directory to exePath
+                var programmerDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer");
+                if (Directory.Exists(programmerDir))
+                {
+                    Directory.Move(programmerDir, Path.Combine(exePath, "Programmer"));
+                    Directory.Delete(Path.Combine(exePath, "programmer1.9.11(build41225).Win64"), true);
+                }
+
                 if (!IsProgrammerAvailable())
                 {
                     MessageBox.Show("Failed to install programmer. Please try again.");
