@@ -129,6 +129,15 @@ namespace TangCoresSetup
             }
         }
 
+        private void ConfigComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Update the file list for the new configuration
+            if (_releaseInfo != null)
+            {
+                UpdateFileListForConfig();
+            }
+        }
+
         private void RefreshDrives_Click(object sender, RoutedEventArgs e)
         {
             RefreshDriveList();
