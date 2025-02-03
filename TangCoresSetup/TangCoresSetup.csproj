@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>tangconsole.png</ApplicationIcon>
+    <ApplicationIcon>tangconsole.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="components.jpg" />
