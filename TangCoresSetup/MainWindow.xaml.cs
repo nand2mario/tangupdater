@@ -328,7 +328,7 @@ namespace TangCoresSetup
             }
             
             // Select all files by default
-            SelectAll_Click(null, null);
+            //SelectAll_Click(null, null);
             
             // Update the count display
             SelectedDriveText.Text = $"Selected drive: {DriveComboBox.SelectedItem} | {updatesAvailable.Count} updates available";
