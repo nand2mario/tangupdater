@@ -30,7 +30,8 @@
                             <ComboBox x:Name="DriveComboBox" Width="200" Margin="0,0,10,0"
                                     SelectionChanged="DriveComboBox_SelectionChanged"/>
                             <Button Content="Refresh Drives" Click="RefreshDrives_Click" Margin="0,0,10,0"/>
-                            <Button Content="Check Updates" Click="CheckUpdates_Click"/>
+                            <CheckBox x:Name="OnlineCheckBox" Content="Online" VerticalAlignment="Center" Margin="0,0,10,0"
+                                    Checked="OnlineCheckBox_Checked" Unchecked="OnlineCheckBox_Checked"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
