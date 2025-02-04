@@ -17,7 +17,8 @@ namespace TangCoresSetup
     {
         public DateTime BuildDate { get; } = new FileInfo(System.Reflection.Assembly.GetExecutingAssembly().Location).LastWriteTime;
         private const string UpdateUrl = "https://raw.githubusercontent.com/nand2mario/tangcores/main/files/list.json";
-        private const string ProgrammerCli = "programmer1.9.11(build41225).Win64\\Programmer\\bin\\programmer_cli.exe";
+        private const string ProgrammerDir = "programmer1.9.11(build41225).Win64";
+        private const string ProgrammerCli = ProgrammerDir + "\\Programmer\\bin\\programmer_cli.exe";
         private readonly HttpClient _httpClient = new();
         private string? _selectedDrivePath;
         private List<RemoteFile> _remoteFiles = new();
@@ -486,6 +487,12 @@ namespace TangCoresSetup
                 progressDialog.FileProgressBar.Value = 0;
                 
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath, true);
+                // Rename extracted directory to match our constant
+                var extractedDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64");
+                if (Directory.Exists(extractedDir))
+                {
+                    Directory.Move(extractedDir, Path.Combine(exePath, ProgrammerDir));
+                }
                 File.Delete(zipPath);
 
                 if (!IsProgrammerAvailable())
@@ -502,8 +509,8 @@ namespace TangCoresSetup
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    var driverV4Path = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
-                    var driverV5Path = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
+                    var driverV4Path = Path.Combine(exePath, ProgrammerDir, "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
+                    var driverV5Path = Path.Combine(exePath, ProgrammerDir, "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
 
                     if (File.Exists(driverV4Path))
                     {
