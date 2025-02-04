@@ -931,10 +931,12 @@ namespace TangCoresSetup
                     if (useLocalCopy)
                     {
                         // Copy from local files directory to SD card
-                        progressDialog.StatusText.Text = $"Copying {file.Filename}...";
+                        Application.Current.Dispatcher.Invoke(() => {
+                            progressDialog.StatusText.Text = $"Copying {file.Filename}...";
+                            progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
+                            progressDialog.UpdateFileProgress(1, 1); // Mark as 100% complete
+                        });
                         File.Copy(localFilePath, destinationPath, true);
-                        progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
-                        progressDialog.UpdateFileProgress(1, 1); // Mark as 100% complete
                         continue;
                     }
 
@@ -977,7 +979,9 @@ namespace TangCoresSetup
                         {
                             await fileStream.WriteAsync(buffer, 0, read);
                             bytesReceived += read;
-                            progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
+                            Application.Current.Dispatcher.Invoke(() => {
+                                progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
+                            });
                         }
                     } while (isMoreToRead);
 
