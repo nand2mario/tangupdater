@@ -931,7 +931,10 @@ namespace TangCoresSetup
                     if (useLocalCopy)
                     {
                         // Copy from local files directory to SD card
+                        progressDialog.StatusText.Text = $"Copying {file.Filename}...";
                         File.Copy(localFilePath, destinationPath, true);
+                        progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
+                        progressDialog.UpdateFileProgress(1, 1); // Mark as 100% complete
                         continue;
                     }
 
