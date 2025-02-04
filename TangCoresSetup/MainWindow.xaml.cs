@@ -178,44 +178,56 @@ namespace TangCoresSetup
             RefreshDriveList();
         }
 
-        private async Task<string?> GetListJson()
+        private async Task<bool> DownloadListJson()
         {
             var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var filesPath = Path.Combine(exePath, "files");
             Directory.CreateDirectory(filesPath);
-            
+
             var localListPath = Path.Combine(filesPath, "list.json");
-            
-            if (OnlineCheckBox.IsChecked == true)
+            try
             {
-                try
-                {
-                    var json = await _httpClient.GetStringAsync(UpdateUrl);
-                    // Save the downloaded list.json for offline use
-                    await File.WriteAllTextAsync(localListPath, json);
-                    return json;
-                }
-                catch (Exception ex)
-                {
-                    AppendBoardOutput($"Error downloading list.json: {ex.Message}");
-                }
+                var json = await _httpClient.GetStringAsync(UpdateUrl);
+                // Save the downloaded list.json for offline use
+                await File.WriteAllTextAsync(localListPath, json);
             }
-            
-            // If offline or download failed, try to use local copy
+            catch (Exception ex)
+            {
+                AppendBoardOutput($"Error downloading list.json: {ex.Message}");
+                return false;
+            }
+            return true;
+        }
+
+        private string? GetListJson()
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var filesPath = Path.Combine(exePath, "files");
+            Directory.CreateDirectory(filesPath);
+
+            var localListPath = Path.Combine(filesPath, "list.json");
+
             if (File.Exists(localListPath))
             {
-                return await File.ReadAllTextAsync(localListPath);
+                return File.ReadAllText(localListPath);
             }
-            
+
             return null;
         }
+
 
         private async void OnlineCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             var online = OnlineCheckBox.IsChecked == true;
             try
             {
-                var json = await GetListJson();
+                if (online && await DownloadListJson() == false)
+                {
+                    MessageBox.Show("Cannot download list.json from Github. Switching to offline mode.");
+                    OnlineCheckBox.IsChecked = false;
+                    online = false;
+                }
+                var json = GetListJson();
                 if (json == null)
                 {
                     _remoteFiles.Clear();
@@ -966,6 +978,8 @@ namespace TangCoresSetup
                         }
                     } while (isMoreToRead);
 
+                    fileStream.Close();
+
                     // Verify the downloaded file
                     var downloadedSha1 = ComputeSha1(localFilePath);
                     if (downloadedSha1 != file.Sha1)
@@ -985,6 +999,7 @@ namespace TangCoresSetup
                     .Select(Path.GetFileName)
                     .ToList();
 
+                var archiveCnt = 0;
                 foreach (var localFile in localFiles)
                 {
                     if (_remoteFiles != null && !_remoteFiles.Any(f => f.Filename == localFile))
@@ -999,11 +1014,12 @@ namespace TangCoresSetup
                         }
                         
                         File.Move(source, destination);
+                        archiveCnt++;
                     }
                 }
 
                 progressDialog.Close();
-                MessageBox.Show("Upgrade completed successfully! Old files have been archived.");
+                MessageBox.Show("Upgrade completed successfully!"+(archiveCnt > 0 ? " Old files have been archived." : ""));
                 UpdateLocalFilesList();
             }
             catch (Exception ex)
