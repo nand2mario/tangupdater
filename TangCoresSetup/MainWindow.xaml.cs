@@ -179,12 +179,11 @@ namespace TangCoresSetup
 
         private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_selectedDrivePath))
-            {
-                MessageBox.Show("Please select a drive first");
-                return;
-            }
-
+            //if (string.IsNullOrEmpty(_selectedDrivePath))
+            //{
+            //    MessageBox.Show("Please select a drive first");
+            //    return;
+            //}
             try
             {
                 // Get the list.json from GitHub
