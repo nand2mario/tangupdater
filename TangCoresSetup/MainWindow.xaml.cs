@@ -638,12 +638,6 @@ namespace TangCoresSetup
             var filesPath = Path.Combine(exePath, "files");
             Directory.CreateDirectory(filesPath);
 
-            // Clean up old firmware files
-            foreach (var oldFile in Directory.GetFiles(filesPath, "firmware_*.bin"))
-            {
-                File.Delete(oldFile);
-            }
-
             var firmwarePath = Path.Combine(filesPath, firmwareFilename);
             if (File.Exists(firmwarePath))
             {

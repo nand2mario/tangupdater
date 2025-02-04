@@ -86,8 +86,8 @@
                     
                     <StackPanel Grid.Row="0" Orientation="Vertical" Margin="0,0,0,10">
                         <Button Content="Check board" Click="CheckBoard_Click" Margin="0,0,0,5" Padding="10,5"/>
-                        <Button x:Name="FlashSNESTang" Content="Flash SNESTang" Click="FlashSNESTang_Click" Margin="0,0,0,5" Padding="10,5" IsEnabled="False"/>
                         <Button x:Name="FlashFirmware" Content="Flash firmware" Click="FlashFirmware_Click" Margin="0,0,0,5" Padding="10,5" IsEnabled="False"/>
+                        <Button x:Name="FlashSNESTang" Content="Flash SNESTang" Click="FlashSNESTang_Click" Margin="0,0,0,5" Padding="10,5" IsEnabled="False"/>
                     </StackPanel>
                     
                     <TextBox x:Name="BoardOutputText" Grid.Row="1" 
