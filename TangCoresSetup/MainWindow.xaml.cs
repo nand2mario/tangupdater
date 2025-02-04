@@ -660,9 +660,10 @@ namespace TangCoresSetup
 
         private async Task<string?> GetLatestSNESTangFile()
         {
+            var selectedConfig = (ConfigComboBox.SelectedItem as dynamic)?.Name ?? string.Empty;
             if (_remoteFiles == null) return null;
             return _remoteFiles
-                .Where(f => f.Filename.StartsWith("snestang_") && f.Filename.EndsWith(".fs"))
+                .Where(f => f.Filename.StartsWith("snestang_" + selectedConfig) && f.Filename.EndsWith(".fs"))
                 .OrderByDescending(f => f.Filename)
                 .Select(f => f.Filename)
                 .FirstOrDefault();
@@ -670,10 +671,16 @@ namespace TangCoresSetup
 
         private async Task<string?> EnsureSNESTangAvailable()
         {
+            var selectedConfig = (ConfigComboBox.SelectedItem as dynamic)?.Name ?? string.Empty;
+            if (selectedConfig == "")
+            {
+                MessageBox.Show("No active configuration selected. Please select one in SD card setup tab.");
+                return null;
+            }
             var snestangFilename = await GetLatestSNESTangFile();
             if (string.IsNullOrEmpty(snestangFilename))
             {
-                AppendBoardOutput("No SNESTang file found in remote files list");
+                MessageBox.Show("No SNESTang file found in remote files list");
                 return null;
             }
 
@@ -931,21 +938,17 @@ namespace TangCoresSetup
                     if (useLocalCopy)
                     {
                         // Copy from local files directory to SD card using async operations
-                        Application.Current.Dispatcher.Invoke(() => {
-                            progressDialog.StatusText.Text = $"Copying {file.Filename}...";
-                            progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
-                        });
+                        progressDialog.StatusText.Text = $"Copying {file.Filename}... ({i}/{filesToUpdate.Count})";
 
                         var fileInfo = new FileInfo(localFilePath);
-                        var totalBytes = fileInfo.Length;
                         var bytesCopied = 0L;
 
                         await using var sourceStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 8192, true);
                         await using var destStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
 
-                        var buffer = new byte[8192];
+                        var buf = new byte[8192];
                         int bytesRead;
-                        while ((bytesRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        while ((bytesRead = await sourceStream.ReadAsync(buf, 0, buf.Length)) > 0)
                         {
                             if (progressDialog.IsCancelled)
                             {
@@ -953,11 +956,11 @@ namespace TangCoresSetup
                                 return;
                             }
 
-                            await destStream.WriteAsync(buffer, 0, bytesRead);
+                            await destStream.WriteAsync(buf, 0, bytesRead);
                             bytesCopied += bytesRead;
                             
                             Application.Current.Dispatcher.Invoke(() => {
-                                progressDialog.UpdateFileProgress(bytesCopied, totalBytes);
+                                progressDialog.UpdateFileProgress(bytesCopied, fileInfo.Length);
                             });
                         }
                         continue;

@@ -4,3 +4,8 @@
   reminder: sys
   examples_as_sys_msg: true
   
+- name: deepseek/deepseek-v3
+  edit_format: diff
+  use_repo_map: true
+  reminder: sys
+  examples_as_sys_msg: true
