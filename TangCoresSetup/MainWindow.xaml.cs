@@ -562,7 +562,7 @@ namespace TangCoresSetup
         {
             var driverDialog = new Window
             {
-                Title = "Install USB Drivers",
+                Title = "Install Gowin USB Drivers",
                 Width = 400,
                 Height = 200,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -574,7 +574,7 @@ namespace TangCoresSetup
             // Add title text
             stackPanel.Children.Add(new TextBlock
             {
-                Text = "Select which USB drivers to install:",
+                Text = "Select which Gowin USB drivers to install for the programmer:",
                 Margin = new Thickness(0, 0, 0, 10)
             });
 
