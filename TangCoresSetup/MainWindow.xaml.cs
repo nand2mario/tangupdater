@@ -856,6 +856,14 @@ namespace TangCoresSetup
             await RunProgrammerCommand($"-r 53 --device GW5AT-60B --fsFile \"{firmwarePath}\" --spiaddr 0x500000");
         }
 
+        private string ComputeSha1(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha1 = SHA1.Create();
+            var hash = sha1.ComputeHash(stream);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
+
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
         {
             var online = OnlineCheckBox.IsChecked == true;
@@ -866,6 +874,10 @@ namespace TangCoresSetup
 
             try
             {
+                var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                var filesPath = Path.Combine(exePath, "files");
+                Directory.CreateDirectory(filesPath);
+
                 var coresPath = Path.Combine(_selectedDrivePath, "cores");
                 Directory.CreateDirectory(coresPath);
 
@@ -882,8 +894,43 @@ namespace TangCoresSetup
                     var file = filesToUpdate[i];
                     progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
 
+                    var localFilePath = Path.Combine(filesPath, file.Filename);
+                    var destinationPath = Path.Combine(coresPath, file.Filename);
+
+                    // Check if we have a valid local copy
+                    bool useLocalCopy = false;
+                    if (File.Exists(localFilePath))
+                    {
+                        try
+                        {
+                            var localSha1 = ComputeSha1(localFilePath);
+                            if (localSha1 == file.Sha1)
+                            {
+                                useLocalCopy = true;
+                            }
+                        }
+                        catch
+                        {
+                            // If we can't compute the hash, we'll need to download it
+                            useLocalCopy = false;
+                        }
+                    }
+
+                    if (useLocalCopy)
+                    {
+                        // Copy from local files directory to SD card
+                        File.Copy(localFilePath, destinationPath, true);
+                        continue;
+                    }
+
+                    if (!online)
+                    {
+                        AppendBoardOutput($"Skipping {file.Filename} - not available locally and offline mode is enabled");
+                        continue;
+                    }
+
+                    // Download the file
                     var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{file.Filename}";
-                    var destination = Path.Combine(coresPath, file.Filename);
 
                     using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
                     response.EnsureSuccessStatusCode();
@@ -891,7 +938,8 @@ namespace TangCoresSetup
                     var totalBytes = response.Content.Headers.ContentLength ?? 0;
                     var bytesReceived = 0L;
 
-                    await using var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None);
+                    // First download to local files directory
+                    await using var fileStream = new FileStream(localFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
                     await using var contentStream = await response.Content.ReadAsStreamAsync();
                     
                     var buffer = new byte[8192];
@@ -917,6 +965,16 @@ namespace TangCoresSetup
                             progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
                         }
                     } while (isMoreToRead);
+
+                    // Verify the downloaded file
+                    var downloadedSha1 = ComputeSha1(localFilePath);
+                    if (downloadedSha1 != file.Sha1)
+                    {
+                        throw new Exception($"SHA1 mismatch for downloaded file {file.Filename}");
+                    }
+
+                    // Copy to SD card
+                    File.Copy(localFilePath, destinationPath, true);
                 }
 
                 // Archive old files not in remote list
