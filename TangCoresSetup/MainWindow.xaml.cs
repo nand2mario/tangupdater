@@ -615,24 +615,109 @@ namespace TangCoresSetup
             await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{fsFile}\"");
         }
 
+        private async Task<string?> GetLatestFirmwareFile()
+        {
+            if (_remoteFiles == null) return null;
+            return _remoteFiles
+                .Where(f => f.Filename.StartsWith("firmware_") && f.Filename.EndsWith(".bin"))
+                .OrderByDescending(f => f.Filename)
+                .Select(f => f.Filename)
+                .FirstOrDefault();
+        }
+
+        private async Task<string?> EnsureFirmwareAvailable()
+        {
+            var firmwareFilename = await GetLatestFirmwareFile();
+            if (string.IsNullOrEmpty(firmwareFilename))
+            {
+                AppendBoardOutput("No firmware file found in remote files list");
+                return null;
+            }
+
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var filesPath = Path.Combine(exePath, "files");
+            Directory.CreateDirectory(filesPath);
+
+            // Clean up old firmware files
+            foreach (var oldFile in Directory.GetFiles(filesPath, "firmware_*.bin"))
+            {
+                File.Delete(oldFile);
+            }
+
+            var firmwarePath = Path.Combine(filesPath, firmwareFilename);
+            if (File.Exists(firmwarePath))
+            {
+                return firmwarePath;
+            }
+
+            // Download the firmware
+            var progressDialog = new ProgressDialog
+            {
+                Owner = this
+            };
+
+            try
+            {
+                progressDialog.Show();
+                progressDialog.StatusText.Text = "Downloading firmware...";
+
+                var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{firmwareFilename}";
+                using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                var bytesReceived = 0L;
+
+                await using var fileStream = new FileStream(firmwarePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using var contentStream = await response.Content.ReadAsStreamAsync();
+                
+                var buffer = new byte[8192];
+                var isMoreToRead = true;
+
+                do
+                {
+                    if (progressDialog.IsCancelled)
+                    {
+                        MessageBox.Show("Download cancelled");
+                        return null;
+                    }
+
+                    var read = await contentStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (read == 0)
+                    {
+                        isMoreToRead = false;
+                    }
+                    else
+                    {
+                        await fileStream.WriteAsync(buffer, 0, read);
+                        bytesReceived += read;
+                        progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
+                    }
+                } while (isMoreToRead);
+
+                return firmwarePath;
+            }
+            catch (Exception ex)
+            {
+                AppendBoardOutput($"Error downloading firmware: {ex.Message}");
+                return null;
+            }
+            finally
+            {
+                progressDialog.Close();
+            }
+        }
+
         private async void FlashFirmware_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_selectedDrivePath))
+            var firmwarePath = await EnsureFirmwareAvailable();
+            if (string.IsNullOrEmpty(firmwarePath))
             {
-                AppendBoardOutput("Please select a drive first");
+                AppendBoardOutput("Failed to get firmware file");
                 return;
             }
 
-            var firmwareFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "firmware_*.bin")
-                .FirstOrDefault();
-
-            if (string.IsNullOrEmpty(firmwareFile))
-            {
-                AppendBoardOutput("Firmware .bin file not found on SD card");
-                return;
-            }
-
-            await RunProgrammerCommand($"-r 53 --device GW5AT-60B --fsFile \"{firmwareFile}\" --spiaddr 0x500000");
+            await RunProgrammerCommand($"-r 53 --device GW5AT-60B --fsFile \"{firmwarePath}\" --spiaddr 0x500000");
         }
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
