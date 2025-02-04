@@ -487,12 +487,6 @@ namespace TangCoresSetup
                 progressDialog.FileProgressBar.Value = 0;
                 
                 System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, exePath, true);
-                // Rename extracted directory to match our constant
-                var extractedDir = Path.Combine(exePath, "programmer1.9.11(build41225).Win64");
-                if (Directory.Exists(extractedDir))
-                {
-                    Directory.Move(extractedDir, Path.Combine(exePath, ProgrammerDir));
-                }
                 File.Delete(zipPath);
 
                 if (!IsProgrammerAvailable())
