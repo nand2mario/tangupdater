@@ -595,24 +595,109 @@ namespace TangCoresSetup
             }
         }
 
+        private async Task<string?> GetLatestSNESTangFile()
+        {
+            if (_remoteFiles == null) return null;
+            return _remoteFiles
+                .Where(f => f.Filename.StartsWith("snestang_") && f.Filename.EndsWith(".fs"))
+                .OrderByDescending(f => f.Filename)
+                .Select(f => f.Filename)
+                .FirstOrDefault();
+        }
+
+        private async Task<string?> EnsureSNESTangAvailable()
+        {
+            var snestangFilename = await GetLatestSNESTangFile();
+            if (string.IsNullOrEmpty(snestangFilename))
+            {
+                AppendBoardOutput("No SNESTang file found in remote files list");
+                return null;
+            }
+
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var filesPath = Path.Combine(exePath, "files");
+            Directory.CreateDirectory(filesPath);
+
+            // Clean up old SNESTang files
+            foreach (var oldFile in Directory.GetFiles(filesPath, "snestang_*.fs"))
+            {
+                File.Delete(oldFile);
+            }
+
+            var snestangPath = Path.Combine(filesPath, snestangFilename);
+            if (File.Exists(snestangPath))
+            {
+                return snestangPath;
+            }
+
+            // Download the SNESTang file
+            var progressDialog = new ProgressDialog
+            {
+                Owner = this
+            };
+
+            try
+            {
+                progressDialog.Show();
+                progressDialog.StatusText.Text = "Downloading SNESTang file...";
+
+                var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{snestangFilename}";
+                using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                var totalBytes = response.Content.Headers.ContentLength ?? 0;
+                var bytesReceived = 0L;
+
+                await using var fileStream = new FileStream(snestangPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                await using var contentStream = await response.Content.ReadAsStreamAsync();
+                
+                var buffer = new byte[8192];
+                var isMoreToRead = true;
+
+                do
+                {
+                    if (progressDialog.IsCancelled)
+                    {
+                        MessageBox.Show("Download cancelled");
+                        return null;
+                    }
+
+                    var read = await contentStream.ReadAsync(buffer, 0, buffer.Length);
+                    if (read == 0)
+                    {
+                        isMoreToRead = false;
+                    }
+                    else
+                    {
+                        await fileStream.WriteAsync(buffer, 0, read);
+                        bytesReceived += read;
+                        progressDialog.UpdateFileProgress(bytesReceived, totalBytes);
+                    }
+                } while (isMoreToRead);
+
+                return snestangPath;
+            }
+            catch (Exception ex)
+            {
+                AppendBoardOutput($"Error downloading SNESTang file: {ex.Message}");
+                return null;
+            }
+            finally
+            {
+                progressDialog.Close();
+            }
+        }
+
         private async void FlashSNESTang_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_selectedDrivePath))
+            var snestangPath = await EnsureSNESTangAvailable();
+            if (string.IsNullOrEmpty(snestangPath))
             {
-                AppendBoardOutput("Please select a drive first");
+                AppendBoardOutput("Failed to get SNESTang file");
                 return;
             }
 
-            var fsFile = Directory.GetFiles(Path.Combine(_selectedDrivePath, "cores"), "snestang_*.fs")
-                .FirstOrDefault();
-
-            if (string.IsNullOrEmpty(fsFile))
-            {
-                AppendBoardOutput("SNESTang .fs file not found on SD card");
-                return;
-            }
-
-            await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{fsFile}\"");
+            await RunProgrammerCommand($"-r 36 --device GW5AT-60B --fsFile \"{snestangPath}\"");
         }
 
         private async Task<string?> GetLatestFirmwareFile()
