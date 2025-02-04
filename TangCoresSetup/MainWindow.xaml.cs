@@ -491,6 +491,46 @@ namespace TangCoresSetup
                 if (!IsProgrammerAvailable())
                 {
                     MessageBox.Show("Failed to install programmer. Please try again.");
+                    return;
+                }
+
+                // Prompt to install USB drivers
+                var result = MessageBox.Show("Programmer installed successfully. Would you like to install the required USB drivers?",
+                    "Install USB Drivers",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                    var driverV4Path = Path.Combine(exePath, "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
+                    var driverV5Path = Path.Combine(exePath, "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
+
+                    if (File.Exists(driverV4Path))
+                    {
+                        AppendBoardOutput("Installing Gowin USB Driver V4...");
+                        var processV4 = System.Diagnostics.Process.Start(driverV4Path);
+                        processV4.WaitForExit();
+                        AppendBoardOutput($"Gowin USB Driver V4 installation completed with exit code {processV4.ExitCode}");
+                    }
+                    else
+                    {
+                        AppendBoardOutput("Gowin USB Driver V4 not found");
+                    }
+
+                    if (File.Exists(driverV5Path))
+                    {
+                        AppendBoardOutput("Installing Gowin USB Driver V5...");
+                        var processV5 = System.Diagnostics.Process.Start(driverV5Path);
+                        processV5.WaitForExit();
+                        AppendBoardOutput($"Gowin USB Driver V5 installation completed with exit code {processV5.ExitCode}");
+                    }
+                    else
+                    {
+                        AppendBoardOutput("Gowin USB Driver V5 not found");
+                    }
+
+                    MessageBox.Show("USB driver installation completed. Please check the output log for details.");
                 }
             }
             catch (Exception ex)
