@@ -177,18 +177,48 @@ namespace TangCoresSetup
             RefreshDriveList();
         }
 
+        private async Task<string?> GetListJson()
+        {
+            var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var filesPath = Path.Combine(exePath, "files");
+            Directory.CreateDirectory(filesPath);
+            
+            var localListPath = Path.Combine(filesPath, "list.json");
+            
+            if (OnlineCheckBox.IsChecked == true)
+            {
+                try
+                {
+                    var json = await _httpClient.GetStringAsync(UpdateUrl);
+                    // Save the downloaded list.json for offline use
+                    await File.WriteAllTextAsync(localListPath, json);
+                    return json;
+                }
+                catch (Exception ex)
+                {
+                    AppendBoardOutput($"Error downloading list.json: {ex.Message}");
+                }
+            }
+            
+            // If offline or download failed, try to use local copy
+            if (File.Exists(localListPath))
+            {
+                return await File.ReadAllTextAsync(localListPath);
+            }
+            
+            return null;
+        }
+
         private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
         {
-            //if (string.IsNullOrEmpty(_selectedDrivePath))
-            //{
-            //    MessageBox.Show("Please select a drive first");
-            //    return;
-            //}
             try
             {
-                // Get the list.json from GitHub
-                //                var json = await _httpClient.GetStringAsync(UpdateUrl);
-                var json = await _httpClient.GetStringAsync(UpdateUrl);
+                var json = await GetListJson();
+                if (json == null)
+                {
+                    MessageBox.Show("Failed to get list.json");
+                    return;
+                }
                 var options = new JsonSerializerOptions
                 {
                     ReadCommentHandling = JsonCommentHandling.Skip,
@@ -624,6 +654,12 @@ namespace TangCoresSetup
                 return snestangPath;
             }
 
+            if (OnlineCheckBox.IsChecked != true)
+            {
+                AppendBoardOutput("SNESTang file not found locally and offline mode is enabled");
+                return null;
+            }
+
             // Download the SNESTang file
             var progressDialog = new ProgressDialog
             {
@@ -721,6 +757,12 @@ namespace TangCoresSetup
             if (File.Exists(firmwarePath))
             {
                 return firmwarePath;
+            }
+
+            if (OnlineCheckBox.IsChecked != true)
+            {
+                AppendBoardOutput("Firmware file not found locally and offline mode is enabled");
+                return null;
             }
 
             // Download the firmware
