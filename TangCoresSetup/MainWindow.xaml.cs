@@ -506,7 +506,16 @@ namespace TangCoresSetup
                     if (v4CheckBox.IsChecked == true && File.Exists(driverV4Path))
                     {
                         AppendBoardOutput("Installing Gowin USB Driver V4...");
-                        var processV4 = System.Diagnostics.Process.Start(driverV4Path);
+                        var processV4 = new System.Diagnostics.Process
+                        {
+                            StartInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = driverV4Path,
+                                Verb = "runas", // Run as admin
+                                UseShellExecute = true
+                            }
+                        };
+                        processV4.Start();
                         processV4.WaitForExit();
                         AppendBoardOutput($"Gowin USB Driver V4 installation completed with exit code {processV4.ExitCode}");
                     }
@@ -518,7 +527,16 @@ namespace TangCoresSetup
                     if (v5CheckBox.IsChecked == true && File.Exists(driverV5Path))
                     {
                         AppendBoardOutput("Installing Gowin USB Driver V5...");
-                        var processV5 = System.Diagnostics.Process.Start(driverV5Path);
+                        var processV5 = new System.Diagnostics.Process
+                        {
+                            StartInfo = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = driverV5Path,
+                                Verb = "runas", // Run as admin
+                                UseShellExecute = true
+                            }
+                        };
+                        processV5.Start();
                         processV5.WaitForExit();
                         AppendBoardOutput($"Gowin USB Driver V5 installation completed with exit code {processV5.ExitCode}");
                     }
