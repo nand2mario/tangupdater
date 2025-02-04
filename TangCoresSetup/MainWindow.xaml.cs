@@ -930,13 +930,36 @@ namespace TangCoresSetup
 
                     if (useLocalCopy)
                     {
-                        // Copy from local files directory to SD card
+                        // Copy from local files directory to SD card using async operations
                         Application.Current.Dispatcher.Invoke(() => {
                             progressDialog.StatusText.Text = $"Copying {file.Filename}...";
                             progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
-                            progressDialog.UpdateFileProgress(1, 1); // Mark as 100% complete
                         });
-                        File.Copy(localFilePath, destinationPath, true);
+
+                        var fileInfo = new FileInfo(localFilePath);
+                        var totalBytes = fileInfo.Length;
+                        var bytesCopied = 0L;
+
+                        await using var sourceStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 8192, true);
+                        await using var destStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
+
+                        var buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            if (progressDialog.IsCancelled)
+                            {
+                                MessageBox.Show("Upgrade cancelled");
+                                return;
+                            }
+
+                            await destStream.WriteAsync(buffer, 0, bytesRead);
+                            bytesCopied += bytesRead;
+                            
+                            Application.Current.Dispatcher.Invoke(() => {
+                                progressDialog.UpdateFileProgress(bytesCopied, totalBytes);
+                            });
+                        }
                         continue;
                     }
 
