@@ -495,37 +495,82 @@ namespace TangCoresSetup
                     return;
                 }
 
-                // Prompt to install USB drivers
-                var result = MessageBox.Show("Programmer installed successfully. Would you like to install the required USB drivers?",
-                    "Install USB Drivers",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                // Create custom dialog for driver selection
+                var driverDialog = new Window
+                {
+                    Title = "Install USB Drivers",
+                    Width = 400,
+                    Height = 200,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this
+                };
 
-                if (result == MessageBoxResult.Yes)
+                var stackPanel = new StackPanel { Margin = new Thickness(10) };
+                
+                // Add title text
+                stackPanel.Children.Add(new TextBlock 
+                { 
+                    Text = "Select which USB drivers to install:",
+                    Margin = new Thickness(0, 0, 0, 10)
+                });
+
+                // Add checkboxes for each driver
+                var v4CheckBox = new CheckBox 
+                { 
+                    Content = "Gowin USB Driver V4", 
+                    IsChecked = true,
+                    Margin = new Thickness(0, 0, 0, 5)
+                };
+                stackPanel.Children.Add(v4CheckBox);
+
+                var v5CheckBox = new CheckBox 
+                { 
+                    Content = "Gowin USB Driver V5", 
+                    IsChecked = true,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+                stackPanel.Children.Add(v5CheckBox);
+
+                // Add install/cancel buttons
+                var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+                var installButton = new Button { Content = "Install", IsDefault = true, Margin = new Thickness(0, 0, 5, 0) };
+                var cancelButton = new Button { Content = "Cancel", IsCancel = true };
+                
+                installButton.Click += (s, e) => driverDialog.DialogResult = true;
+                cancelButton.Click += (s, e) => driverDialog.DialogResult = false;
+                
+                buttonPanel.Children.Add(installButton);
+                buttonPanel.Children.Add(cancelButton);
+                stackPanel.Children.Add(buttonPanel);
+
+                driverDialog.Content = stackPanel;
+
+                // Show dialog and process result
+                if (driverDialog.ShowDialog() == true)
                 {
                     var driverV4Path = Path.Combine(exePath, ProgrammerDir, "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
                     var driverV5Path = Path.Combine(exePath, ProgrammerDir, "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
 
-                    if (File.Exists(driverV4Path))
+                    if (v4CheckBox.IsChecked == true && File.Exists(driverV4Path))
                     {
                         AppendBoardOutput("Installing Gowin USB Driver V4...");
                         var processV4 = System.Diagnostics.Process.Start(driverV4Path);
                         processV4.WaitForExit();
                         AppendBoardOutput($"Gowin USB Driver V4 installation completed with exit code {processV4.ExitCode}");
                     }
-                    else
+                    else if (v4CheckBox.IsChecked == true)
                     {
                         AppendBoardOutput("Gowin USB Driver V4 not found");
                     }
 
-                    if (File.Exists(driverV5Path))
+                    if (v5CheckBox.IsChecked == true && File.Exists(driverV5Path))
                     {
                         AppendBoardOutput("Installing Gowin USB Driver V5...");
                         var processV5 = System.Diagnostics.Process.Start(driverV5Path);
                         processV5.WaitForExit();
                         AppendBoardOutput($"Gowin USB Driver V5 installation completed with exit code {processV5.ExitCode}");
                     }
-                    else
+                    else if (v5CheckBox.IsChecked == true)
                     {
                         AppendBoardOutput("Gowin USB Driver V5 not found");
                     }
