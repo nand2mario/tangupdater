@@ -495,55 +495,7 @@ namespace TangCoresSetup
                     return;
                 }
 
-                // Create custom dialog for driver selection
-                var driverDialog = new Window
-                {
-                    Title = "Install USB Drivers",
-                    Width = 400,
-                    Height = 200,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Owner = this
-                };
-
-                var stackPanel = new StackPanel { Margin = new Thickness(10) };
-                
-                // Add title text
-                stackPanel.Children.Add(new TextBlock 
-                { 
-                    Text = "Select which USB drivers to install:",
-                    Margin = new Thickness(0, 0, 0, 10)
-                });
-
-                // Add checkboxes for each driver
-                var v4CheckBox = new CheckBox 
-                { 
-                    Content = "Gowin USB Driver V4", 
-                    IsChecked = true,
-                    Margin = new Thickness(0, 0, 0, 5)
-                };
-                stackPanel.Children.Add(v4CheckBox);
-
-                var v5CheckBox = new CheckBox 
-                { 
-                    Content = "Gowin USB Driver V5", 
-                    IsChecked = true,
-                    Margin = new Thickness(0, 0, 0, 10)
-                };
-                stackPanel.Children.Add(v5CheckBox);
-
-                // Add install/cancel buttons
-                var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-                var installButton = new Button { Content = "Install", IsDefault = true, Margin = new Thickness(0, 0, 5, 0) };
-                var cancelButton = new Button { Content = "Cancel", IsCancel = true };
-                
-                installButton.Click += (s, e) => driverDialog.DialogResult = true;
-                cancelButton.Click += (s, e) => driverDialog.DialogResult = false;
-                
-                buttonPanel.Children.Add(installButton);
-                buttonPanel.Children.Add(cancelButton);
-                stackPanel.Children.Add(buttonPanel);
-
-                driverDialog.Content = stackPanel;
+                var (driverDialog, v4CheckBox, v5CheckBox) = CreateDriverDialog();
 
                 // Show dialog and process result
                 if (driverDialog.ShowDialog() == true)
@@ -587,6 +539,61 @@ namespace TangCoresSetup
                 progressDialog.Close();
             }
         }
+
+        private (Window, CheckBox, CheckBox) CreateDriverDialog()
+        {
+            var driverDialog = new Window
+            {
+                Title = "Install USB Drivers",
+                Width = 400,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+
+            var stackPanel = new StackPanel { Margin = new Thickness(10) };
+
+            // Add title text
+            stackPanel.Children.Add(new TextBlock
+            {
+                Text = "Select which USB drivers to install:",
+                Margin = new Thickness(0, 0, 0, 10)
+            });
+
+            // Add checkboxes for each driver
+            var v4CheckBox = new CheckBox
+            {
+                Content = "Gowin USB Driver V4",
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+            stackPanel.Children.Add(v4CheckBox);
+
+            var v5CheckBox = new CheckBox
+            {
+                Content = "Gowin USB Driver V5",
+                IsChecked = true,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            stackPanel.Children.Add(v5CheckBox);
+
+            // Add install/cancel buttons
+            var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
+            var installButton = new Button { Content = "Install", IsDefault = true, Margin = new Thickness(0, 0, 5, 0) };
+            var cancelButton = new Button { Content = "Cancel", IsCancel = true };
+
+            installButton.Click += (s, e) => driverDialog.DialogResult = true;
+            cancelButton.Click += (s, e) => driverDialog.DialogResult = false;
+
+            buttonPanel.Children.Add(installButton);
+            buttonPanel.Children.Add(cancelButton);
+            stackPanel.Children.Add(buttonPanel);
+
+            driverDialog.Content = stackPanel;
+
+            return (driverDialog, v4CheckBox, v5CheckBox);
+        }
+
 
         private void UpdateFileListForConfig()
         {
