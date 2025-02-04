@@ -502,9 +502,8 @@ namespace TangCoresSetup
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    var exePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-                    var driverV4Path = Path.Combine(exePath, "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
-                    var driverV5Path = Path.Combine(exePath, "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
+                    var driverV4Path = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer", "driver", "GowinUSBCableDriverV4_for_win7+.exe");
+                    var driverV5Path = Path.Combine(exePath, "programmer1.9.11(build41225).Win64", "Programmer", "driver", "GowinUSBCableDriverV5_for_win7+.exe");
 
                     if (File.Exists(driverV4Path))
                     {
