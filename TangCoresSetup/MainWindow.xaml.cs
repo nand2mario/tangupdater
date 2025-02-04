@@ -20,9 +20,9 @@ namespace TangCoresSetup
         private const string ProgrammerCli = "programmer1.9.11(build41225).Win64\\Programmer\\bin\\programmer_cli.exe";
         private readonly HttpClient _httpClient = new();
         private string? _selectedDrivePath;
-        private List<RemoteFile>? _remoteFiles;
-        private List<LocalFile>? _localFiles;
-        private ReleaseInfo? _releaseInfo;
+        private List<RemoteFile> _remoteFiles = new();
+        private List<LocalFile> _localFiles = new();
+        private ReleaseInfo _releaseInfo = new();
 
         public MainWindow()
         {
@@ -33,6 +33,7 @@ namespace TangCoresSetup
         private class RemoteFile
         {
             public string Filename { get; set; } = "";
+            public string Sha1 { get; set; } = "";
         }
 
         private class LocalFile
@@ -97,7 +98,7 @@ namespace TangCoresSetup
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             RefreshDriveList();
-            CheckUpdates_Click(null, null);
+            OnlineCheckBox.IsChecked = true; // enable online mode by default
         }
 
         private void RefreshDriveList()
@@ -209,13 +210,19 @@ namespace TangCoresSetup
             return null;
         }
 
-        private async void CheckUpdates_Click(object sender, RoutedEventArgs e)
+        private async void OnlineCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            var online = OnlineCheckBox.IsChecked == true;
             try
             {
                 var json = await GetListJson();
                 if (json == null)
                 {
+                    _remoteFiles.Clear();
+                    _releaseInfo.Configs.Clear();
+                    _releaseInfo.Latest.Clear();
+                    ConfigComboBox.Items.Clear();
+                    RemoteFilesList.Items.Clear();
                     MessageBox.Show("Failed to get list.json");
                     return;
                 }
@@ -224,13 +231,27 @@ namespace TangCoresSetup
                     ReadCommentHandling = JsonCommentHandling.Skip,
                     AllowTrailingCommas = true
                 };
-                _releaseInfo = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
-
-                if (_releaseInfo == null || !_releaseInfo.Latest.Any())
+                var info = JsonSerializer.Deserialize<ReleaseInfo>(json, options);
+                if (info == null || !info.Latest.Any())
                 {
                     MessageBox.Show("Failed to parse update information");
                     return;
                 }
+
+                _releaseInfo = info;
+
+                // if offline, check if the referenced files are available, if not, delete the entries from _releaseInfo.Latest
+                if (!online)
+                {
+                    var availableFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "files"))
+                        .Select(Path.GetFileName)
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    _releaseInfo.Latest = _releaseInfo.Latest
+                        .Where(f => availableFiles.Contains(f.Filename))
+                        .ToList();
+                }
+
                 _remoteFiles = _releaseInfo.Latest;
                 
                 // Populate configuration dropdown
@@ -321,7 +342,7 @@ namespace TangCoresSetup
             }
         }
 
-        private void Update_Click(object sender, RoutedEventArgs e)
+        private void Install_Click(object sender, RoutedEventArgs e)
         {
             var filesToUpdate = new List<RemoteFile>();
             foreach (var item in RemoteFilesList.Items)
@@ -837,6 +858,7 @@ namespace TangCoresSetup
 
         private async Task PerformUpgrade(List<RemoteFile> filesToUpdate)
         {
+            var online = OnlineCheckBox.IsChecked == true;
             var progressDialog = new ProgressDialog
             {
                 Owner = this
@@ -858,7 +880,7 @@ namespace TangCoresSetup
                     }
 
                     var file = filesToUpdate[i];
-                    progressDialog.UpdateProgress(i + 1, filesToUpdate.Count, file.Filename);
+                    progressDialog.UpdateProgress(i, filesToUpdate.Count, file.Filename);
 
                     var url = $"https://github.com/nand2mario/tangcores/raw/main/files/{file.Filename}";
                     var destination = Path.Combine(coresPath, file.Filename);
