@@ -618,12 +618,6 @@ namespace TangCoresSetup
             var filesPath = Path.Combine(exePath, "files");
             Directory.CreateDirectory(filesPath);
 
-            // Clean up old SNESTang files
-            foreach (var oldFile in Directory.GetFiles(filesPath, "snestang_*.fs"))
-            {
-                File.Delete(oldFile);
-            }
-
             var snestangPath = Path.Combine(filesPath, snestangFilename);
             if (File.Exists(snestangPath))
             {
